@@ -12,6 +12,7 @@ class Game {
       x: 0,
       y: 0,
       speed: 4,
+      angle: 0,
     };
 
     // Animation
@@ -37,10 +38,16 @@ class Game {
   update() {
     this.time += 0.03;
 
-    if (this.keys["w"]) this.player.y -= this.player.speed;
-    if (this.keys["s"]) this.player.y += this.player.speed;
-    if (this.keys["a"]) this.player.x -= this.player.speed;
-    if (this.keys["d"]) this.player.x += this.player.speed;
+    if (this.keys["w"]) {
+      this.player.x += this.player.speed * Math.sin(this.player.angle);
+      this.player.y -= this.player.speed*Math.cos(this.player.angle);
+    }
+    if (this.keys["s"]) {
+      this.player.x -= this.player.speed * Math.sin(this.player.angle);
+      this.player.y += this.player.speed*Math.cos(this.player.angle);
+    }
+    if (this.keys["a"]) this.player.angle -= 0.05;
+    if (this.keys["d"]) this.player.angle += 0.05;
   }
 
   drawOcean() {
@@ -94,6 +101,9 @@ class Game {
     this.ctx.save();
 
     this.ctx.translate(this.player.x, this.player.y);
+    this.ctx.rotate(this.player.angle);
+    
+    
 
     // Ship Body
     this.ctx.fillStyle = "#D9D9D9";
