@@ -13,13 +13,26 @@ class Game {
       y: 0,
       speed: 4,
       angle: 0,
+
+      velocity: 0,
+      acceleration: 0.1,
+      maxspeed: 4,
+      friction: 0.98,
     };
+    // Missiles
+    this.missile = [];
+    this.maxAmmo = 6;
+    this.missileAmmo = this.maxAmmo;
+    this.reloadDuration = 2;
+    this.reloadTimer = 0;
+    this.fireCooldown = 0;
 
     // Animation
     this.time = 0;
 
     // Keyboard
     this.keys = {};
+
 
     window.addEventListener("keydown", (e) => {
       this.keys[e.key.toLowerCase()] = true;
@@ -36,16 +49,72 @@ class Game {
   }
 
   update() {
-    this.time += 0.03;
+    const dt = 0.03;
+    this.time += dt;
+
+    if (this.fireCooldown > 0) {
+      this.fireCooldown -= dt;
+    }
+
+    if (this.reloadTimer > 0) {
+      this.reloadTimer -= dt;
+
+      if (this.reloadTimer <= 0) {
+        this.reloadTimer = 0;
+        this.missileAmmo = this.maxAmmo;
+      }
+    }
+
+    if (this.keys["r"] && this.reloadTimer <= 0 && this.missileAmmo < this.maxAmmo) {
+      this.reloadTimer = this.reloadDuration;
+    }
 
     if (this.keys["w"]) {
-      this.player.x += this.player.speed * Math.sin(this.player.angle);
-      this.player.y -= this.player.speed*Math.cos(this.player.angle);
+      this.player.velocity += this.player.acceleration;
     }
+
     if (this.keys["s"]) {
-      this.player.x -= this.player.speed * Math.sin(this.player.angle);
-      this.player.y += this.player.speed*Math.cos(this.player.angle);
+      this.player.velocity -= this.player.acceleration;
     }
+
+    if (this.player.velocity > this.player.maxspeed) {
+      this.player.velocity = this.player.maxspeed;
+    }
+
+    if (this.player.velocity < -this.player.maxspeed) {
+      this.player.velocity = -this.player.maxspeed;
+    }
+
+    if (this.keys[" "] && this.fireCooldown <= 0 && this.reloadTimer <= 0) {
+      if (this.missileAmmo > 0) {
+        this.missile.push({
+          x: this.player.x,
+          y: this.player.y,
+          angle: this.player.angle,
+          speed: 8,
+        });
+
+        this.missileAmmo -= 3;
+        this.fireCooldown = 0.18;
+      } else {
+        this.reloadTimer = this.reloadDuration;
+      }
+    }
+
+    this.player.velocity *= this.player.friction;
+
+    this.missile.forEach((shot) => {
+      shot.x += Math.sin(shot.angle) * shot.speed;
+      shot.y -= Math.cos(shot.angle) * shot.speed;
+    });
+
+    this.missile = this.missile.filter((shot) => {
+      return Math.abs(shot.x) < 3000 && Math.abs(shot.y) < 3000;
+    });
+
+    this.player.x += Math.sin(this.player.angle) * this.player.velocity;
+    this.player.y -= Math.cos(this.player.angle) * this.player.velocity;
+
     if (this.keys["a"]) this.player.angle -= 0.05;
     if (this.keys["d"]) this.player.angle += 0.05;
   }
@@ -130,6 +199,14 @@ class Game {
 
     this.ctx.restore();
 
+    // Missiles
+    this.ctx.fillStyle = "#FFB703";
+    this.missile.forEach((shot) => {
+      this.ctx.beginPath();
+      this.ctx.arc(shot.x, shot.y, 3, 0, Math.PI * 2);
+      this.ctx.fill();
+    });
+
     this.ctx.restore();
   }
 
@@ -139,6 +216,11 @@ class Game {
 
     this.ctx.fillText("Naval Combat Simulator", 20, 35);
     this.ctx.fillText("Move : W A S D", 20, 65);
+    this.ctx.fillText("Ammo : " + this.missileAmmo + "/" + this.maxAmmo, 20, 95);
+
+    if (this.reloadTimer > 0) {
+      this.ctx.fillText("Reloading...", 20, 125);
+    }
 
     this.ctx.fillText(
       "Position : (" +
@@ -147,7 +229,7 @@ class Game {
         Math.round(this.player.y) +
         ")",
       20,
-      95,
+      155,
     );
   }
 
