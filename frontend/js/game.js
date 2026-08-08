@@ -18,6 +18,14 @@ class Game {
       acceleration: 0.1,
       maxspeed: 4,
       friction: 0.98,
+      radius: 35,
+    };
+
+    this.map = {
+      left: -1000,
+      right: 1000,
+      top: -600,
+      bottom: 600,
     };
 
     this.missileSystem = new MissileSystem();
@@ -79,22 +87,42 @@ class Game {
     this.player.x += Math.sin(this.player.angle) * this.player.velocity;
     this.player.y -= Math.cos(this.player.angle) * this.player.velocity;
 
+    this.player.x = Math.max(
+      this.map.left + this.player.radius,
+      Math.min(this.player.x, this.map.right - this.player.radius),
+    );
+    this.player.y = Math.max(
+      this.map.top + this.player.radius,
+      Math.min(this.player.y, this.map.bottom - this.player.radius),
+    );
+
     if (this.keys["a"]) this.player.angle -= 0.05;
     if (this.keys["d"]) this.player.angle += 0.05;
   }
 
   drawOcean() {
-    // Background
-    this.ctx.fillStyle = "#0A3D62";
+    this.ctx.save();
+
+    this.ctx.fillStyle = "#000000";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.clip();
 
     // Camera
     this.ctx.translate(
       this.canvas.width / 2 - this.player.x,
       this.canvas.height / 2 - this.player.y,
     );
+
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.rect(this.map.left, this.map.top, this.map.right - this.map.left, this.map.bottom - this.map.top);
+    this.ctx.clip();
+
+    this.ctx.fillStyle = "#0a3d62";
+    this.ctx.fillRect(this.map.left, this.map.top, this.map.right - this.map.left, this.map.bottom - this.map.top);
 
     // Animated Ocean Waves
     this.ctx.strokeStyle = "rgba(255,255,255,0.05)";
@@ -129,6 +157,15 @@ class Game {
       this.ctx.lineTo(3000, y);
       this.ctx.stroke();
     }
+
+    this.ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    this.ctx.lineWidth = 3;
+    this.ctx.strokeRect(
+      this.map.left,
+      this.map.top,
+      this.map.right - this.map.left,
+      this.map.bottom - this.map.top,
+    );
 
     // Ship
     this.ctx.save();
@@ -165,6 +202,7 @@ class Game {
 
     this.missileSystem.draw(this.ctx);
 
+    this.ctx.restore();
     this.ctx.restore();
   }
 
