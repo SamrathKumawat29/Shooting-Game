@@ -19,20 +19,20 @@ class Game {
       maxspeed: 4,
       friction: 0.98,
     };
-    // Missiles
-    this.missile = [];
-    this.maxAmmo = 6;
-    this.missileAmmo = this.maxAmmo;
-    this.reloadDuration = 2;
-    this.reloadTimer = 0;
-    this.fireCooldown = 0;
+
+    this.missileSystem = new MissileSystem();
+    this.maxAmmo = this.missileSystem.maxAmmo;
+    this.missileAmmo = this.missileSystem.missileAmmo;
+    this.reloadDuration = this.missileSystem.reloadDuration;
+    this.reloadTimer = this.missileSystem.reloadTimer;
+    this.fireCooldown = this.missileSystem.fireCooldown;
+    this.missile = this.missileSystem.missiles;
 
     // Animation
     this.time = 0;
 
     // Keyboard
     this.keys = {};
-
 
     window.addEventListener("keydown", (e) => {
       this.keys[e.key.toLowerCase()] = true;
@@ -52,23 +52,6 @@ class Game {
     const dt = 0.03;
     this.time += dt;
 
-    if (this.fireCooldown > 0) {
-      this.fireCooldown -= dt;
-    }
-
-    if (this.reloadTimer > 0) {
-      this.reloadTimer -= dt;
-
-      if (this.reloadTimer <= 0) {
-        this.reloadTimer = 0;
-        this.missileAmmo = this.maxAmmo;
-      }
-    }
-
-    if (this.keys["r"] && this.reloadTimer <= 0 && this.missileAmmo < this.maxAmmo) {
-      this.reloadTimer = this.reloadDuration;
-    }
-
     if (this.keys["w"]) {
       this.player.velocity += this.player.acceleration;
     }
@@ -85,32 +68,13 @@ class Game {
       this.player.velocity = -this.player.maxspeed;
     }
 
-    if (this.keys[" "] && this.fireCooldown <= 0 && this.reloadTimer <= 0) {
-      if (this.missileAmmo > 0) {
-        this.missile.push({
-          x: this.player.x,
-          y: this.player.y,
-          angle: this.player.angle,
-          speed: 8,
-        });
-
-        this.missileAmmo -= 3;
-        this.fireCooldown = 0.18;
-      } else {
-        this.reloadTimer = this.reloadDuration;
-      }
-    }
+    this.missileSystem.update(dt, this.keys, this.player);
+    this.missile = this.missileSystem.missiles;
+    this.missileAmmo = this.missileSystem.missileAmmo;
+    this.reloadTimer = this.missileSystem.reloadTimer;
+    this.fireCooldown = this.missileSystem.fireCooldown;
 
     this.player.velocity *= this.player.friction;
-
-    this.missile.forEach((shot) => {
-      shot.x += Math.sin(shot.angle) * shot.speed;
-      shot.y -= Math.cos(shot.angle) * shot.speed;
-    });
-
-    this.missile = this.missile.filter((shot) => {
-      return Math.abs(shot.x) < 3000 && Math.abs(shot.y) < 3000;
-    });
 
     this.player.x += Math.sin(this.player.angle) * this.player.velocity;
     this.player.y -= Math.cos(this.player.angle) * this.player.velocity;
@@ -199,28 +163,62 @@ class Game {
 
     this.ctx.restore();
 
-    // Missiles
-    this.ctx.fillStyle = "#FFB703";
-    this.missile.forEach((shot) => {
-      this.ctx.beginPath();
-      this.ctx.arc(shot.x, shot.y, 3, 0, Math.PI * 2);
-      this.ctx.fill();
-    });
+    this.missileSystem.draw(this.ctx);
 
     this.ctx.restore();
   }
 
   drawUI() {
+    this.ctx.save();
     this.ctx.fillStyle = "white";
     this.ctx.font = "20px Arial";
 
     this.ctx.fillText("Naval Combat Simulator", 20, 35);
     this.ctx.fillText("Move : W A S D", 20, 65);
-    this.ctx.fillText("Ammo : " + this.missileAmmo + "/" + this.maxAmmo, 20, 95);
 
-    if (this.reloadTimer > 0) {
-      this.ctx.fillText("Reloading...", 20, 125);
-    }
+    const panelX = 20;
+    const panelY = 180;
+    const panelWidth = 260;
+    const panelHeight = 110;
+
+    this.ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+    this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+    this.ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+    this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
+
+    this.ctx.fillStyle = "#FFD166";
+    this.ctx.font = "bold 18px Arial";
+    this.ctx.fillText("Missile Status", panelX + 16, panelY + 28);
+
+    this.ctx.font = "16px Arial";
+    this.ctx.fillStyle = "white";
+    this.ctx.fillText(
+      "Ammo : " + this.missileAmmo + " / " + this.maxAmmo,
+      panelX + 16,
+      panelY + 56,
+    );
+
+    const isReloading = this.reloadTimer > 0;
+    const progress = isReloading
+      ? Math.max(0, 1 - this.reloadTimer / this.reloadDuration)
+      : 1;
+    const barWidth = 180;
+    const barHeight = 12;
+    const barX = panelX + 16;
+    const barY = panelY + 74;
+
+    this.ctx.fillStyle = "rgba(255,255,255,0.2)";
+    this.ctx.fillRect(barX, barY, barWidth, barHeight);
+
+    this.ctx.fillStyle = isReloading ? "#FFB703" : "#2ECC71";
+    this.ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+
+    this.ctx.fillStyle = "white";
+    this.ctx.fillText(
+      isReloading ? "Reloading..." : "Ready to fire",
+      barX,
+      panelY + 96,
+    );
 
     this.ctx.fillText(
       "Position : (" +
@@ -231,6 +229,8 @@ class Game {
       20,
       155,
     );
+
+    this.ctx.restore();
   }
 
   draw() {
