@@ -9,6 +9,7 @@ class Game {
 
     // Player
     this.player = {
+       
       x: 0,
       y: 0,
       speed: 4,
@@ -20,6 +21,12 @@ class Game {
       friction: 0.98,
       radius: 35,
     };
+
+    
+
+    // ship image
+    this.shipImg = new Image();
+    this.shipImg.src = "../assets/ship.png";
 
     this.map = {
       left: -1000,
@@ -166,6 +173,8 @@ class Game {
       this.map.right - this.map.left,
       this.map.bottom - this.map.top,
     );
+    
+    
 
     // Ship
     this.ctx.save();
@@ -173,30 +182,8 @@ class Game {
     this.ctx.translate(this.player.x, this.player.y);
     this.ctx.rotate(this.player.angle);
     
-    
 
-    // Ship Body
-    this.ctx.fillStyle = "#D9D9D9";
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(0, -30);
-    this.ctx.lineTo(18, 20);
-    this.ctx.lineTo(0, 10);
-    this.ctx.lineTo(-18, 20);
-    this.ctx.closePath();
-    this.ctx.fill();
-
-    // Deck
-    this.ctx.fillStyle = "#666";
-    this.ctx.fillRect(-6, -12, 12, 22);
-
-    // Bridge
-    this.ctx.fillStyle = "#999";
-    this.ctx.fillRect(-4, -22, 8, 8);
-
-    // Gun
-    this.ctx.fillStyle = "#222";
-    this.ctx.fillRect(-2, -35, 4, 12);
+    this.ctx.drawImage(this.shipImg, -80, -70, 160, 140);
 
     this.ctx.restore();
 
