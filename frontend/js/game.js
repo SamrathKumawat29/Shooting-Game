@@ -36,6 +36,7 @@ class Game {
     };
 
     this.missileSystem = new MissileSystem();
+    this.enemy = new enemy();
     this.maxAmmo = this.missileSystem.maxAmmo;
     this.missileAmmo = this.missileSystem.missileAmmo;
     this.reloadDuration = this.missileSystem.reloadDuration;
@@ -88,6 +89,8 @@ class Game {
     this.missileAmmo = this.missileSystem.missileAmmo;
     this.reloadTimer = this.missileSystem.reloadTimer;
     this.fireCooldown = this.missileSystem.fireCooldown;
+
+    this.enemy.update(dt, this.player, this.map)
 
     this.player.velocity *= this.player.friction;
 
@@ -188,6 +191,7 @@ class Game {
     this.ctx.restore();
 
     this.missileSystem.draw(this.ctx);
+    this.enemy.draw(this.ctx)
 
     this.ctx.restore();
     this.ctx.restore();
