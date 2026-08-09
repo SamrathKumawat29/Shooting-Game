@@ -90,7 +90,8 @@ class Game {
     this.reloadTimer = this.missileSystem.reloadTimer;
     this.fireCooldown = this.missileSystem.fireCooldown;
 
-    this.enemy.update(dt, this.player, this.map)
+    this.enemy.update(dt, this.player, this.map,this.missileSystem.missiles)
+    
 
     this.player.velocity *= this.player.friction;
 
