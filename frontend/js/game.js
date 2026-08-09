@@ -9,6 +9,7 @@ class Game {
 
     // Player
     this.player = {
+       
       x: 0,
       y: 0,
       speed: 4,
@@ -18,21 +19,35 @@ class Game {
       acceleration: 0.1,
       maxspeed: 4,
       friction: 0.98,
+      radius: 35,
     };
-    // Missiles
-    this.missile = [];
-    this.maxAmmo = 6;
-    this.missileAmmo = this.maxAmmo;
-    this.reloadDuration = 2;
-    this.reloadTimer = 0;
-    this.fireCooldown = 0;
+
+    
+
+    // ship image
+    this.shipImg = new Image();
+    this.shipImg.src = "../assets/ship.png";
+
+    this.map = {
+      left: -1000,
+      right: 1000,
+      top: -600,
+      bottom: 600,
+    };
+
+    this.missileSystem = new MissileSystem();
+    this.maxAmmo = this.missileSystem.maxAmmo;
+    this.missileAmmo = this.missileSystem.missileAmmo;
+    this.reloadDuration = this.missileSystem.reloadDuration;
+    this.reloadTimer = this.missileSystem.reloadTimer;
+    this.fireCooldown = this.missileSystem.fireCooldown;
+    this.missile = this.missileSystem.missiles;
 
     // Animation
     this.time = 0;
 
     // Keyboard
     this.keys = {};
-
 
     window.addEventListener("keydown", (e) => {
       this.keys[e.key.toLowerCase()] = true;
@@ -52,23 +67,6 @@ class Game {
     const dt = 0.03;
     this.time += dt;
 
-    if (this.fireCooldown > 0) {
-      this.fireCooldown -= dt;
-    }
-
-    if (this.reloadTimer > 0) {
-      this.reloadTimer -= dt;
-
-      if (this.reloadTimer <= 0) {
-        this.reloadTimer = 0;
-        this.missileAmmo = this.maxAmmo;
-      }
-    }
-
-    if (this.keys["r"] && this.reloadTimer <= 0 && this.missileAmmo < this.maxAmmo) {
-      this.reloadTimer = this.reloadDuration;
-    }
-
     if (this.keys["w"]) {
       this.player.velocity += this.player.acceleration;
     }
@@ -85,52 +83,53 @@ class Game {
       this.player.velocity = -this.player.maxspeed;
     }
 
-    if (this.keys[" "] && this.fireCooldown <= 0 && this.reloadTimer <= 0) {
-      if (this.missileAmmo > 0) {
-        this.missile.push({
-          x: this.player.x,
-          y: this.player.y,
-          angle: this.player.angle,
-          speed: 8,
-        });
-
-        this.missileAmmo -= 3;
-        this.fireCooldown = 0.18;
-      } else {
-        this.reloadTimer = this.reloadDuration;
-      }
-    }
+    this.missileSystem.update(dt, this.keys, this.player);
+    this.missile = this.missileSystem.missiles;
+    this.missileAmmo = this.missileSystem.missileAmmo;
+    this.reloadTimer = this.missileSystem.reloadTimer;
+    this.fireCooldown = this.missileSystem.fireCooldown;
 
     this.player.velocity *= this.player.friction;
 
-    this.missile.forEach((shot) => {
-      shot.x += Math.sin(shot.angle) * shot.speed;
-      shot.y -= Math.cos(shot.angle) * shot.speed;
-    });
-
-    this.missile = this.missile.filter((shot) => {
-      return Math.abs(shot.x) < 3000 && Math.abs(shot.y) < 3000;
-    });
-
     this.player.x += Math.sin(this.player.angle) * this.player.velocity;
     this.player.y -= Math.cos(this.player.angle) * this.player.velocity;
+
+    this.player.x = Math.max(
+      this.map.left + this.player.radius,
+      Math.min(this.player.x, this.map.right - this.player.radius),
+    );
+    this.player.y = Math.max(
+      this.map.top + this.player.radius,
+      Math.min(this.player.y, this.map.bottom - this.player.radius),
+    );
 
     if (this.keys["a"]) this.player.angle -= 0.05;
     if (this.keys["d"]) this.player.angle += 0.05;
   }
 
   drawOcean() {
-    // Background
-    this.ctx.fillStyle = "#0A3D62";
+    this.ctx.save();
+
+    this.ctx.fillStyle = "#000000";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.clip();
 
     // Camera
     this.ctx.translate(
       this.canvas.width / 2 - this.player.x,
       this.canvas.height / 2 - this.player.y,
     );
+
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.rect(this.map.left, this.map.top, this.map.right - this.map.left, this.map.bottom - this.map.top);
+    this.ctx.clip();
+
+    this.ctx.fillStyle = "#0a3d62";
+    this.ctx.fillRect(this.map.left, this.map.top, this.map.right - this.map.left, this.map.bottom - this.map.top);
 
     // Animated Ocean Waves
     this.ctx.strokeStyle = "rgba(255,255,255,0.05)";
@@ -166,61 +165,85 @@ class Game {
       this.ctx.stroke();
     }
 
+    this.ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    this.ctx.lineWidth = 3;
+    this.ctx.strokeRect(
+      this.map.left,
+      this.map.top,
+      this.map.right - this.map.left,
+      this.map.bottom - this.map.top,
+    );
+    
+    
+
     // Ship
     this.ctx.save();
 
     this.ctx.translate(this.player.x, this.player.y);
     this.ctx.rotate(this.player.angle);
     
-    
 
-    // Ship Body
-    this.ctx.fillStyle = "#D9D9D9";
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(0, -30);
-    this.ctx.lineTo(18, 20);
-    this.ctx.lineTo(0, 10);
-    this.ctx.lineTo(-18, 20);
-    this.ctx.closePath();
-    this.ctx.fill();
-
-    // Deck
-    this.ctx.fillStyle = "#666";
-    this.ctx.fillRect(-6, -12, 12, 22);
-
-    // Bridge
-    this.ctx.fillStyle = "#999";
-    this.ctx.fillRect(-4, -22, 8, 8);
-
-    // Gun
-    this.ctx.fillStyle = "#222";
-    this.ctx.fillRect(-2, -35, 4, 12);
+    this.ctx.drawImage(this.shipImg, -80, -70, 160, 140);
 
     this.ctx.restore();
 
-    // Missiles
-    this.ctx.fillStyle = "#FFB703";
-    this.missile.forEach((shot) => {
-      this.ctx.beginPath();
-      this.ctx.arc(shot.x, shot.y, 3, 0, Math.PI * 2);
-      this.ctx.fill();
-    });
+    this.missileSystem.draw(this.ctx);
 
+    this.ctx.restore();
     this.ctx.restore();
   }
 
   drawUI() {
+    this.ctx.save();
     this.ctx.fillStyle = "white";
     this.ctx.font = "20px Arial";
 
     this.ctx.fillText("Naval Combat Simulator", 20, 35);
     this.ctx.fillText("Move : W A S D", 20, 65);
-    this.ctx.fillText("Ammo : " + this.missileAmmo + "/" + this.maxAmmo, 20, 95);
 
-    if (this.reloadTimer > 0) {
-      this.ctx.fillText("Reloading...", 20, 125);
-    }
+    const panelX = 20;
+    const panelY = 180;
+    const panelWidth = 260;
+    const panelHeight = 110;
+
+    this.ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+    this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+    this.ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+    this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
+
+    this.ctx.fillStyle = "#FFD166";
+    this.ctx.font = "bold 18px Arial";
+    this.ctx.fillText("Missile Status", panelX + 16, panelY + 28);
+
+    this.ctx.font = "16px Arial";
+    this.ctx.fillStyle = "white";
+    this.ctx.fillText(
+      "Ammo : " + this.missileAmmo + " / " + this.maxAmmo,
+      panelX + 16,
+      panelY + 56,
+    );
+
+    const isReloading = this.reloadTimer > 0;
+    const progress = isReloading
+      ? Math.max(0, 1 - this.reloadTimer / this.reloadDuration)
+      : 1;
+    const barWidth = 180;
+    const barHeight = 12;
+    const barX = panelX + 16;
+    const barY = panelY + 74;
+
+    this.ctx.fillStyle = "rgba(255,255,255,0.2)";
+    this.ctx.fillRect(barX, barY, barWidth, barHeight);
+
+    this.ctx.fillStyle = isReloading ? "#FFB703" : "#2ECC71";
+    this.ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+
+    this.ctx.fillStyle = "white";
+    this.ctx.fillText(
+      isReloading ? "Reloading..." : "Ready to fire",
+      barX,
+      panelY + 96,
+    );
 
     this.ctx.fillText(
       "Position : (" +
@@ -231,6 +254,8 @@ class Game {
       20,
       155,
     );
+
+    this.ctx.restore();
   }
 
   draw() {
