@@ -9,6 +9,8 @@ class enemy {
     const x = Math.random() * (map.right - map.left) + map.left;
     const y = Math.random() * (map.bottom - map.top) + map.top;
 
+    
+
     this.enemies.push({
       x: x,
       y: y,
@@ -21,7 +23,11 @@ class enemy {
 
   update(dt, player, map) {
     this.spawnTimer -= dt;
-    if (this.spawnTimer <= 0) {
+
+    const distFromStart = Math.sqrt(player.x * player.x + player.y * player.y);
+   const playerHasMoved = distFromStart > 50; // adjust threshold as needed
+
+    if (playerHasMoved && this.spawnTimer <= 0 && this.enemies.length < 3) { // limit to 3 enemies at a time
       this.spawn(map);
       this.spawnTimer = this.spawnInterval;
     }
