@@ -25,6 +25,7 @@ class Game {
     this.reloadTimer = this.missileSystem.reloadTimer;
     this.fireCooldown = this.missileSystem.fireCooldown;
     this.missile = this.missileSystem.missiles;
+    this.gameOver = false;
 
     // Animation
     this.time = 0;
@@ -47,20 +48,30 @@ class Game {
   }
 
   update() {
-    const dt = 0.03;
-    this.time += dt;
+  if (this.gameOver) {
+    if (this.keys[" "]) {
+      this.restart();
+    }
+    return;
+  } // stop everything immediately if already game over
 
-    this.missileSystem.update(dt, this.keys, this.player);
-    this.missile = this.missileSystem.missiles;
-    this.missileAmmo = this.missileSystem.missileAmmo;
-    this.reloadTimer = this.missileSystem.reloadTimer;
-    this.fireCooldown = this.missileSystem.fireCooldown;
+  const dt = 0.03;
+  this.time += dt;
 
-    this.enemy.update(dt, this.player, this.map,this.missileSystem.missiles)
+  this.missileSystem.update(dt, this.keys, this.player);
+  this.missile = this.missileSystem.missiles;
+  this.missileAmmo = this.missileSystem.missileAmmo;
+  this.reloadTimer = this.missileSystem.reloadTimer;
+  this.fireCooldown = this.missileSystem.fireCooldown;
 
-    this.player.update(this.keys, this.map);
+  this.enemy.update(dt, this.player, this.map, this.missileSystem.missiles);
+
+  this.player.update(this.keys, this.map);
+
+  if (this.player.health <= 0) {
+    this.gameOver = true;
   }
-
+}
   drawOcean() {
     this.ctx.save();
 
@@ -170,7 +181,24 @@ class Game {
       panelY + 56,
     );
 
-    this.ctx.fillText("Health : " + Math.max(0, Math.round(this.player.health)), 20, 125);
+    const healthBarX = 20;
+    const healthBarY = 105;
+    const healthBarWidth = 200;
+    const healthBarHeight = 16;
+    const healthPercent = Math.max(0, this.player.health / this.player.maxHealth);
+
+    this.ctx.fillStyle = "rgba(255,255,255,0.2)";
+    this.ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+    this.ctx.fillStyle = healthPercent > 0.3 ? "#2ECC71" : "#E63946";
+    this.ctx.fillRect(healthBarX, healthBarY, healthBarWidth * healthPercent, healthBarHeight);
+
+    this.ctx.strokeStyle = "white";
+    this.ctx.strokeRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+    this.ctx.fillStyle = "white";
+    this.ctx.font = "14px Arial";
+    this.ctx.fillText("Health", healthBarX, healthBarY - 5); //Health bar
 
     const isReloading = this.reloadTimer > 0;
     const progress = isReloading
@@ -206,9 +234,39 @@ class Game {
 
     this.ctx.restore();
   }
+  
+  drawGameOver() {
+  this.ctx.save();
+  this.ctx.fillStyle = "rgba(0,0,0,0.7)";
+  this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+  this.ctx.fillStyle = "white";
+  this.ctx.font = "bold 48px Arial";
+  this.ctx.textAlign = "center";
+  this.ctx.fillText("GAME OVER", this.canvas.width / 2, this.canvas.height / 2);
+
+  this.ctx.font = "20px Arial";
+  this.ctx.fillText(
+    "Press SPACE to restart",
+    this.canvas.width / 2,
+    this.canvas.height / 2 + 40
+  );
+  this.ctx.restore();
+}
+
+restart() {
+  this.player = new Ship(); // or however you construct your player
+  this.missileSystem = new MissileSystem();
+  this.enemy = new enemy();
+  this.gameOver = false;
+  this.time = 0;
+}
 
   draw() {
     this.drawOcean();
     this.drawUI();
+    if (this.gameOver) {
+      this.drawGameOver();
+    }
   }
 }
