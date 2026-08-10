@@ -48,7 +48,8 @@ class MissileSystem {
     });
 
     this.missiles = this.missiles.filter((shot) => {
-      return Math.abs(shot.x) < 3000 && Math.abs(shot.y) < 3000;
+      return !shot.hit && Math.abs(shot.x) < 3000 && Math.abs(shot.y) < 3000;
+
     });
   }
 
