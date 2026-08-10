@@ -8,25 +8,7 @@ class Game {
     window.addEventListener("resize", () => this.resize());
 
     // Player
-    this.player = {
-       
-      x: 0,
-      y: 0,
-      speed: 4,
-      angle: 0,
-
-      velocity: 0,
-      acceleration: 0.1,
-      maxspeed: 4,
-      friction: 0.98,
-      radius: 35,
-    };
-
-    
-
-    // ship image
-    this.shipImg = new Image();
-    this.shipImg.src = "../assets/ship.png";
+    this.player = new Ship();
 
     this.map = {
       left: -1000,
@@ -68,22 +50,6 @@ class Game {
     const dt = 0.03;
     this.time += dt;
 
-    if (this.keys["w"]) {
-      this.player.velocity += this.player.acceleration;
-    }
-
-    if (this.keys["s"]) {
-      this.player.velocity -= this.player.acceleration;
-    }
-
-    if (this.player.velocity > this.player.maxspeed) {
-      this.player.velocity = this.player.maxspeed;
-    }
-
-    if (this.player.velocity < -this.player.maxspeed) {
-      this.player.velocity = -this.player.maxspeed;
-    }
-
     this.missileSystem.update(dt, this.keys, this.player);
     this.missile = this.missileSystem.missiles;
     this.missileAmmo = this.missileSystem.missileAmmo;
@@ -91,24 +57,8 @@ class Game {
     this.fireCooldown = this.missileSystem.fireCooldown;
 
     this.enemy.update(dt, this.player, this.map,this.missileSystem.missiles)
-    
 
-    this.player.velocity *= this.player.friction;
-
-    this.player.x += Math.sin(this.player.angle) * this.player.velocity;
-    this.player.y -= Math.cos(this.player.angle) * this.player.velocity;
-
-    this.player.x = Math.max(
-      this.map.left + this.player.radius,
-      Math.min(this.player.x, this.map.right - this.player.radius),
-    );
-    this.player.y = Math.max(
-      this.map.top + this.player.radius,
-      Math.min(this.player.y, this.map.bottom - this.player.radius),
-    );
-
-    if (this.keys["a"]) this.player.angle -= 0.05;
-    if (this.keys["d"]) this.player.angle += 0.05;
+    this.player.update(this.keys, this.map);
   }
 
   drawOcean() {
@@ -181,15 +131,7 @@ class Game {
     
 
     // Ship
-    this.ctx.save();
-
-    this.ctx.translate(this.player.x, this.player.y);
-    this.ctx.rotate(this.player.angle);
-    
-
-    this.ctx.drawImage(this.shipImg, -80, -70, 160, 140);
-
-    this.ctx.restore();
+    this.player.draw(this.ctx);
 
     this.missileSystem.draw(this.ctx);
     this.enemy.draw(this.ctx)
@@ -227,6 +169,8 @@ class Game {
       panelX + 16,
       panelY + 56,
     );
+
+    this.ctx.fillText("Health : " + Math.max(0, Math.round(this.player.health)), 20, 125);
 
     const isReloading = this.reloadTimer > 0;
     const progress = isReloading

@@ -3,6 +3,8 @@ class enemy {
     this.enemies = [];
     this.spawnTimer = 2; // first enemy appears after 2 seconds
     this.spawnInterval = 4; // then every 4 seconds
+    this.enemyImg = new Image();
+    this.enemyImg.src = "../assets/enemy_ship.png";
   }
 
   spawn(map) {
@@ -50,26 +52,31 @@ class enemy {
 
       if (dist < enemy.radius) {
         enemy.health -= 1;
-        shot.hit = true; // mark missile for removal
+        shot.hit = true;
       }
     });
+  });
+
+  // Collision: enemy touches player
+  this.enemies.forEach((enemy) => {
+    const dx = player.x - enemy.x;
+    const dy = player.y - enemy.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < enemy.radius + player.radius) {
+      player.health -= 1;
+    }
   });
 
   this.enemies = this.enemies.filter((enemy) => enemy.health > 0);
 }
   draw(ctx) {
-    ctx.fillStyle = "#e63946";
-    this.enemies.forEach((enemy) => {
-      ctx.save();
-      ctx.translate(enemy.x, enemy.y);
-      ctx.rotate(enemy.angle);
-      ctx.beginPath();
-      ctx.moveTo(0, -20);
-      ctx.lineTo(12, 15);
-      ctx.lineTo(-12, 15);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    });
-  }
+  this.enemies.forEach((enemy) => {
+    ctx.save();
+    ctx.translate(enemy.x, enemy.y);
+    ctx.rotate(enemy.angle);
+    ctx.drawImage(this.enemyImg, -20, -20, 30, 40); // adjust to match your image size
+    ctx.restore();
+  });
+}
 }
