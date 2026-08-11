@@ -8,25 +8,7 @@ class Game {
     window.addEventListener("resize", () => this.resize());
 
     // Player
-    this.player = {
-       
-      x: 0,
-      y: 0,
-      speed: 4,
-      angle: 0,
-
-      velocity: 0,
-      acceleration: 0.1,
-      maxspeed: 4,
-      friction: 0.98,
-      radius: 35,
-    };
-
-    
-
-    // ship image
-    this.shipImg = new Image();
-    this.shipImg.src = "../assets/ship.png";
+    this.player = new Ship();
 
     this.map = {
       left: -1000,
@@ -36,12 +18,14 @@ class Game {
     };
 
     this.missileSystem = new MissileSystem();
+    this.enemy = new enemy();
     this.maxAmmo = this.missileSystem.maxAmmo;
     this.missileAmmo = this.missileSystem.missileAmmo;
     this.reloadDuration = this.missileSystem.reloadDuration;
     this.reloadTimer = this.missileSystem.reloadTimer;
     this.fireCooldown = this.missileSystem.fireCooldown;
     this.missile = this.missileSystem.missiles;
+    this.gameOver = false;
 
     // Animation
     this.time = 0;
@@ -64,49 +48,30 @@ class Game {
   }
 
   update() {
-    const dt = 0.03;
-    this.time += dt;
-
-    if (this.keys["w"]) {
-      this.player.velocity += this.player.acceleration;
+  if (this.gameOver) {
+    if (this.keys[" "]) {
+      this.restart();
     }
+    return;
+  } // stop everything immediately if already game over
 
-    if (this.keys["s"]) {
-      this.player.velocity -= this.player.acceleration;
-    }
+  const dt = 0.03;
+  this.time += dt;
 
-    if (this.player.velocity > this.player.maxspeed) {
-      this.player.velocity = this.player.maxspeed;
-    }
+  this.missileSystem.update(dt, this.keys, this.player);
+  this.missile = this.missileSystem.missiles;
+  this.missileAmmo = this.missileSystem.missileAmmo;
+  this.reloadTimer = this.missileSystem.reloadTimer;
+  this.fireCooldown = this.missileSystem.fireCooldown;
 
-    if (this.player.velocity < -this.player.maxspeed) {
-      this.player.velocity = -this.player.maxspeed;
-    }
+  this.enemy.update(dt, this.player, this.map, this.missileSystem.missiles);
 
-    this.missileSystem.update(dt, this.keys, this.player);
-    this.missile = this.missileSystem.missiles;
-    this.missileAmmo = this.missileSystem.missileAmmo;
-    this.reloadTimer = this.missileSystem.reloadTimer;
-    this.fireCooldown = this.missileSystem.fireCooldown;
+  this.player.update(this.keys, this.map);
 
-    this.player.velocity *= this.player.friction;
-
-    this.player.x += Math.sin(this.player.angle) * this.player.velocity;
-    this.player.y -= Math.cos(this.player.angle) * this.player.velocity;
-
-    this.player.x = Math.max(
-      this.map.left + this.player.radius,
-      Math.min(this.player.x, this.map.right - this.player.radius),
-    );
-    this.player.y = Math.max(
-      this.map.top + this.player.radius,
-      Math.min(this.player.y, this.map.bottom - this.player.radius),
-    );
-
-    if (this.keys["a"]) this.player.angle -= 0.05;
-    if (this.keys["d"]) this.player.angle += 0.05;
+  if (this.player.health <= 0) {
+    this.gameOver = true;
   }
-
+}
   drawOcean() {
     this.ctx.save();
 
@@ -177,17 +142,10 @@ class Game {
     
 
     // Ship
-    this.ctx.save();
-
-    this.ctx.translate(this.player.x, this.player.y);
-    this.ctx.rotate(this.player.angle);
-    
-
-    this.ctx.drawImage(this.shipImg, -80, -70, 160, 140);
-
-    this.ctx.restore();
+    this.player.draw(this.ctx);
 
     this.missileSystem.draw(this.ctx);
+    this.enemy.draw(this.ctx)
 
     this.ctx.restore();
     this.ctx.restore();
@@ -223,6 +181,25 @@ class Game {
       panelY + 56,
     );
 
+    const healthBarX = 20;
+    const healthBarY = 105;
+    const healthBarWidth = 200;
+    const healthBarHeight = 16;
+    const healthPercent = Math.max(0, this.player.health / this.player.maxHealth);
+
+    this.ctx.fillStyle = "rgba(255,255,255,0.2)";
+    this.ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+    this.ctx.fillStyle = healthPercent > 0.3 ? "#2ECC71" : "#E63946";
+    this.ctx.fillRect(healthBarX, healthBarY, healthBarWidth * healthPercent, healthBarHeight);
+
+    this.ctx.strokeStyle = "white";
+    this.ctx.strokeRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+    this.ctx.fillStyle = "white";
+    this.ctx.font = "14px Arial";
+    this.ctx.fillText("Health", healthBarX, healthBarY - 5); //Health bar
+
     const isReloading = this.reloadTimer > 0;
     const progress = isReloading
       ? Math.max(0, 1 - this.reloadTimer / this.reloadDuration)
@@ -257,9 +234,39 @@ class Game {
 
     this.ctx.restore();
   }
+  
+  drawGameOver() {
+  this.ctx.save();
+  this.ctx.fillStyle = "rgba(0,0,0,0.7)";
+  this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+  this.ctx.fillStyle = "white";
+  this.ctx.font = "bold 48px Arial";
+  this.ctx.textAlign = "center";
+  this.ctx.fillText("GAME OVER", this.canvas.width / 2, this.canvas.height / 2);
+
+  this.ctx.font = "20px Arial";
+  this.ctx.fillText(
+    "Press SPACE to restart",
+    this.canvas.width / 2,
+    this.canvas.height / 2 + 40
+  );
+  this.ctx.restore();
+}
+
+restart() {
+  this.player = new Ship(); // or however you construct your player
+  this.missileSystem = new MissileSystem();
+  this.enemy = new enemy();
+  this.gameOver = false;
+  this.time = 0;
+}
 
   draw() {
     this.drawOcean();
     this.drawUI();
+    if (this.gameOver) {
+      this.drawGameOver();
+    }
   }
 }
