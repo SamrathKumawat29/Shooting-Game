@@ -1,0 +1,326 @@
+/* =========================================
+   Naval Combat Simulator
+   Login Page
+========================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #071b33, #0a3d62);
+
+  height: 100vh;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+.login-container {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+.login-box {
+  width: 400px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  padding: 40px;
+
+  border-radius: 15px;
+
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+}
+
+.login-box h1 {
+  color: white;
+
+  text-align: center;
+
+  margin-bottom: 10px;
+}
+
+.login-box p {
+  color: #d9d9d9;
+
+  text-align: center;
+
+  margin-bottom: 25px;
+}
+
+.login-box input {
+  width: 100%;
+
+  padding: 14px;
+
+  margin-bottom: 18px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  font-size: 16px;
+
+  outline: none;
+}
+
+.login-box button {
+  width: 100%;
+
+  padding: 14px;
+
+  background: #1e88e5;
+
+  color: white;
+
+  border: none;
+
+  border-radius: 8px;
+
+  font-size: 17px;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.login-box button:hover {
+  background: #42a5f5;
+}
+
+.register {
+  margin-top: 20px;
+
+  color: white;
+}
+
+.register a {
+  color: #ffd54f;
+
+  text-decoration: none;
+
+  font-weight: bold;
+}
+
+.register a:hover {
+  text-decoration: underline;
+}
+
+/* =========================================
+   Main Menu
+========================================= */
+
+.menu-container {
+  width: 100%;
+  height: 100vh;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+.menu-box {
+  width: 450px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(10px);
+
+  border-radius: 15px;
+
+  padding: 40px;
+
+  text-align: center;
+
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+}
+
+.menu-box h1 {
+  color: white;
+
+  margin-bottom: 10px;
+}
+
+.menu-box p {
+  color: #ddd;
+
+  margin-bottom: 30px;
+}
+
+.menu-box button {
+  width: 100%;
+
+  margin: 10px 0;
+}
+
+/* =========================================
+   Dashboard
+========================================= */
+
+.dashboard-container {
+  width: 90%;
+
+  margin: 40px auto;
+
+  text-align: center;
+}
+
+.dashboard-container h1 {
+  color: white;
+
+  margin-bottom: 30px;
+}
+
+.dashboard-grid {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: 20px;
+
+  margin-bottom: 30px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(8px);
+
+  padding: 25px;
+
+  border-radius: 12px;
+
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.card h2 {
+  color: #4fc3f7;
+
+  font-size: 34px;
+}
+
+.card p {
+  color: white;
+
+  margin-top: 10px;
+}
+
+/* =========================================
+   Reports
+========================================= */
+
+.reports-container {
+  width: 90%;
+
+  margin: 40px auto;
+
+  text-align: center;
+}
+
+.reports-container h1 {
+  color: white;
+
+  margin-bottom: 30px;
+}
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  color: white;
+
+  border-radius: 10px;
+
+  overflow: hidden;
+}
+
+th {
+  background: #1565c0;
+
+  padding: 15px;
+}
+
+td {
+  padding: 15px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.reports-container button {
+  margin: 10px;
+}
+
+/* =========================================
+   Settings
+========================================= */
+
+.settings-container {
+  width: 500px;
+
+  margin: 40px auto;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  padding: 30px;
+
+  border-radius: 12px;
+
+  backdrop-filter: blur(8px);
+}
+
+.settings-container h1 {
+  color: white;
+
+  text-align: center;
+
+  margin-bottom: 30px;
+}
+
+.setting-card {
+  background: rgba(255, 255, 255, 0.05);
+
+  padding: 15px;
+
+  margin-bottom: 15px;
+
+  border-radius: 8px;
+
+  color: white;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+}
+
+.setting-card select {
+  padding: 8px;
+
+  border-radius: 5px;
+
+  border: none;
+}
