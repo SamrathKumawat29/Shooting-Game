@@ -4,7 +4,7 @@ class enemy {
     this.spawnTimer = 2; // first enemy appears after 2 seconds
     this.spawnInterval = 4; // then every 4 seconds
     this.enemyImg = new Image();
-    this.enemyImg.src = "../../assets/enemy_ship.png";
+    this.enemyImg.src = "/assets/enemy_ship.png";
   }
 
   spawn(map) {

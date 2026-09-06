@@ -15,7 +15,7 @@ class Ship {
     this.maxHealth = 100;
 
     this.shipImg = new Image();
-    this.shipImg.src = "../../assets/ship.png";
+    this.shipImg.src = "/assets/ship.png";
   }
 
   update(keys, map) {
