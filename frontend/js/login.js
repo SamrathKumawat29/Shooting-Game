@@ -10,7 +10,7 @@ form.addEventListener("submit", async (event) => {
   };
 
   try {
-    const response = await fetch("https://shooting-game-ng0a.onrender.com/dashboard/", {
+    const response = await fetch("https://shooting-game-ng0a.onrender.com/login/", {
       method: "POST",
 
       headers: {
