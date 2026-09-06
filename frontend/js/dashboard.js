@@ -1,5 +1,5 @@
 async function loadDashboard() {
-  const response = await fetch("http://127.0.0.1:8000/dashboard/");
+  const response = await fetch("https://shooting-game-ng0a.onrender.com/dashboard/");
 
   const data = await response.json();
 
