@@ -35,8 +35,8 @@ app = FastAPI(
 
 origins = [
     "http://127.0.0.1:5500",
-    "http://localhost:5500"
-    "naval-combater.netlify.app"
+    "http://localhost:5500",
+    "https://naval-combater.netlify.app"
 ]
 
 app.add_middleware(
