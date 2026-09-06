@@ -11,21 +11,38 @@ form.addEventListener("submit", async (event) => {
     password: document.getElementById("password").value,
   };
 
-  const response = await fetch("https://shooting-game-ng0a.onrender.com/auth/register", {
-    method: "POST",
+  try {
+    const response = await fetch("https://shooting-game-ng0a.onrender.com/auth/register", {
+      method: "POST",
 
-    headers: {
-      "Content-Type": "application/json",
-    },
+      headers: {
+        "Content-Type": "application/json",
+      },
 
-    body: JSON.stringify(user),
-  });
+      body: JSON.stringify(user),
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  alert(data.message);
+    console.log("Status:", response.status);
+    console.log("Response:", data);
 
-  if (response.ok) {
-    window.location.href = "login.html";
+    if (response.ok) {
+
+      alert(data.message || "Registration successful!");
+
+      window.location.href = "login.html";
+
+    } else {
+
+      alert(data.detail || "Registration failed.");
+
+    }
+
+  } catch (error) {
+
+    console.error("Error:", error);
+
+    alert("Cannot connect to backend.");
   }
 });

@@ -4,41 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Register</title>
+    <title>Register - Naval Combat Simulator</title>
 
     <link rel="stylesheet" href="../css/style.css" />
   </head>
 
   <body>
-    <div class="login-container">
-      <div class="login-box">
+    <div class="auth-container">
+      <div class="auth-card">
         <h1>Create Account</h1>
 
-        <p>Register New User</p>
+        <p class="auth-subtitle">Register New User</p>
 
         <form id="registerForm">
-          <input type="text" id="name" placeholder="Full Name" required />
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Enter your name"
+            required
+          />
 
-          <input type="email" id="email" placeholder="Email" required />
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email"
+            required
+          />
 
           <input
             type="password"
             id="password"
-            placeholder="Password"
+            name="password"
+            placeholder="Enter your password"
             required
           />
 
           <button type="submit">Register</button>
         </form>
 
-        <p class="register">
+        <p class="auth-link">
           Already have an account?
-
-          <a href="login.html"> Login </a>
+          <a href="login.html">Login</a>
         </p>
       </div>
     </div>
 
-    <script src="../js/register.js"></script>
+    <!-- Register JavaScript -->
+    <script src="../js/register.js?v=3"></script>
   </body>
 </html>

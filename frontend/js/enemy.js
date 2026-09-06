@@ -11,8 +11,6 @@ class enemy {
     const x = Math.random() * (map.right - map.left) + map.left;
     const y = Math.random() * (map.bottom - map.top) + map.top;
 
-    
-
     this.enemies.push({
       x: x,
       y: y,
@@ -24,59 +22,59 @@ class enemy {
   }
 
   update(dt, player, map, missiles) {
-  this.spawnTimer -= dt;
+    this.spawnTimer -= dt;
 
-  const distFromStart = Math.sqrt(player.x * player.x + player.y * player.y);
-  const playerHasMoved = distFromStart > 50;
+    const distFromStart = Math.sqrt(player.x * player.x + player.y * player.y);
+    const playerHasMoved = distFromStart > 50;
 
-  if (playerHasMoved && this.spawnTimer <= 0 && this.enemies.length < 5) {
-    this.spawn(map);
-    this.spawnTimer = this.spawnInterval;
-  }
+    if (playerHasMoved && this.spawnTimer <= 0 && this.enemies.length < 5) {
+      this.spawn(map);
+      this.spawnTimer = this.spawnInterval;
+    }
 
-  this.enemies.forEach((enemy) => {
-    const dx = player.x - enemy.x;
-    const dy = player.y - enemy.y;
-    enemy.angle = Math.atan2(dx, -dy);
-
-    enemy.x += Math.sin(enemy.angle) * enemy.speed;
-    enemy.y -= Math.cos(enemy.angle) * enemy.speed;
-  });
-
-  // Collision: missile hits enemy
-  missiles.forEach((shot) => {
     this.enemies.forEach((enemy) => {
-      const dx = shot.x - enemy.x;
-      const dy = shot.y - enemy.y;
+      const dx = player.x - enemy.x;
+      const dy = player.y - enemy.y;
+      enemy.angle = Math.atan2(dx, -dy);
+
+      enemy.x += Math.sin(enemy.angle) * enemy.speed;
+      enemy.y -= Math.cos(enemy.angle) * enemy.speed;
+    });
+
+    // Collision: missile hits enemy
+    missiles.forEach((shot) => {
+      this.enemies.forEach((enemy) => {
+        const dx = shot.x - enemy.x;
+        const dy = shot.y - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < enemy.radius) {
+          enemy.health -= 1;
+          shot.hit = true;
+        }
+      });
+    });
+
+    // Collision: enemy touches player
+    this.enemies.forEach((enemy) => {
+      const dx = player.x - enemy.x;
+      const dy = player.y - enemy.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < enemy.radius) {
-        enemy.health -= 1;
-        shot.hit = true;
+      if (dist < enemy.radius + player.radius) {
+        player.health -= 1;
       }
     });
-  });
 
-  // Collision: enemy touches player
-  this.enemies.forEach((enemy) => {
-    const dx = player.x - enemy.x;
-    const dy = player.y - enemy.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist < enemy.radius + player.radius) {
-      player.health -= 1;
-    }
-  });
-
-  this.enemies = this.enemies.filter((enemy) => enemy.health > 0);
-}
+    this.enemies = this.enemies.filter((enemy) => enemy.health > 0);
+  }
   draw(ctx) {
-  this.enemies.forEach((enemy) => {
-    ctx.save();
-    ctx.translate(enemy.x, enemy.y);
-    ctx.rotate(enemy.angle);
-    ctx.drawImage(this.enemyImg, -20, -20, 30, 40); // adjust to match your image size
-    ctx.restore();
-  });
-}
+    this.enemies.forEach((enemy) => {
+      ctx.save();
+      ctx.translate(enemy.x, enemy.y);
+      ctx.rotate(enemy.angle);
+      ctx.drawImage(this.enemyImg, -20, -20, 30, 40); // adjust to match your image size
+      ctx.restore();
+    });
+  }
 }

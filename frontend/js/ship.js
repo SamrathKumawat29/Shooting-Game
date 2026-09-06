@@ -10,7 +10,7 @@ class Ship {
     this.maxspeed = 4;
     this.friction = 0.98;
     this.radius = 35;
-    
+
     this.health = 100;
     this.maxHealth = 100;
 
