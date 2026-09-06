@@ -11,7 +11,7 @@ form.addEventListener("submit", async (event) => {
     password: document.getElementById("password").value,
   };
 
-  const response = await fetch("http://127.0.0.1:8000/auth/register", {
+  const response = await fetch("https://shooting-game-ng0a.onrender.com/auth/register", {
     method: "POST",
 
     headers: {
